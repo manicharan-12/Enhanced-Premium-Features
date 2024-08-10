@@ -1,5 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+
+const NavbarContainer = styled.nav`
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 15px 30px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+`;
+
+const Logo = styled(Link)`
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #4a90e2;
+  }
+`;
+
+const NavLinks = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const NavLink = styled(Link)`
+  color: #333;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 15px;
+
+  &:hover, &.active {
+    color: #4a90e2;
+    background-color: rgba(74, 144, 226, 0.1);
+    transform: translateY(-2px);
+  }
+`;
+
+const Button = styled.button`
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-left: 20px;
+
+  &:hover {
+    background: #357abd;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+  }
+`;
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,44 +88,25 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        {!isAuthenticated && (
-          <Link to="/" className="text-white text-xl font-bold">
-            JobConnect
-          </Link>
+    <NavbarContainer>
+      <Logo to="/">JobConnect</Logo>
+      <NavLinks>
+        {isAuthenticated ? (
+          <>
+            <NavLink to="/dashboard" activeClassName="active">Dashboard</NavLink>
+            {plan === 'free' && (
+              <Button onClick={handleUpgradeToPremium}>Upgrade to Premium</Button>
+            )}
+            <Button onClick={handleLogout}>Logout</Button>
+          </>
+        ) : (
+          <>
+            <NavLink to="/login" activeClassName="active">Login</NavLink>
+            <NavLink to="/register" activeClassName="active">Register</NavLink>
+          </>
         )}
-        <div>
-          {isAuthenticated ? (
-            <>
-              <Link
-                to={userType === 'user' ? '/user-dashboard' : '/recruiter-dashboard'}
-                className="text-white mr-4"
-              >
-                Dashboard
-              </Link>
-              {plan === 'free' && (
-                <button onClick={handleUpgradeToPremium} className="text-white mr-4">
-                  Upgrade to Premium
-                </button>
-              )}
-              <button onClick={handleLogout} className="text-white">
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="text-white mr-4">
-                Login
-              </Link>
-              <Link to="/register" className="text-white">
-                Register
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-    </nav>
+      </NavLinks>
+    </NavbarContainer>
   );
 };
 
