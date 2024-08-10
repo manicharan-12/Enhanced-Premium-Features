@@ -1,3 +1,5 @@
+// models/User.js
+
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -17,7 +19,6 @@ const UserSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['free', 'premium'],
     default: 'free'
   },
   skills: [String],

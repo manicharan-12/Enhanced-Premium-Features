@@ -1,3 +1,4 @@
+//server.js
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -19,8 +20,8 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api', authRoutes);
-app.use('/api', dashboardRoutes);
+app.use('/', authRoutes);
+app.use('/', dashboardRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

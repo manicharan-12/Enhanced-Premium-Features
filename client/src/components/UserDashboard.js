@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { ThreeDots } from 'react-loader-spinner';
-import { getUserDashboard, upgradeToPremium } from '../services/api';
+import { getUserDashboard } from '../services/api';
 import PremiumFeatures from './PremiumFeatures';
 
 const fadeIn = keyframes`

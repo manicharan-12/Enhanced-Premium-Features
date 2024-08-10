@@ -1,114 +1,149 @@
-// PremiumPlans.js
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
-import { upgradeToPremium } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { getPremiumPlans } from '../services/api';
 
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
+const PlanCardWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: ${props => props.color};
+  color: white;
 `;
 
-const PlanContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  animation: ${fadeIn} 0.5s ease-out;
+const PlanName = styled.h2`
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
 `;
 
-const PlanCard = styled.div`
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-  transition: all 0.3s ease;
-  text-align: center;
+const PlanPeriod = styled.p`
+  margin-bottom: 1rem;
+`;
+
+const PlanPrice = styled.div`
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+`;
+
+const FeatureList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+`;
+
+const FeatureItem = styled.li`
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: ${props => props.included ? 'white' : 'rgba(255, 255, 255, 0.8)'};
+`;
+
+const FeatureIcon = styled.span`
+  margin-right: 0.5rem;
+  color: ${props => props.included ? '#4ade80' : '#f87171'};
+`;
+
+const FeatureText = styled.span`
+  color: ${props => props.included ? 'white' : 'rgba(255, 255, 255, 0.8)'};
+`;
+
+const BuyButton = styled.button`
+  margin-top: auto;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: background-color 0.3s;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
   }
 `;
 
-const PlanTitle = styled.h2`
-  color: #333;
-  margin-bottom: 20px;
+const PlanCard = ({ name, price, features, color }) => {
+  console.log(features);
+  
+  return(
+    <PlanCardWrapper color={color}>
+    <PlanName>{name}</PlanName>
+    <PlanPeriod>PER MONTH</PlanPeriod>
+    <PlanPrice>${price}</PlanPrice>
+    <FeatureList>
+      {features.map((feature, index) => (
+        <FeatureItem key={index} included={feature.included}>
+          <FeatureIcon included={feature.included}>
+            {feature.included ? '✓' : '✕'}
+          </FeatureIcon>
+          <FeatureText included={feature.included}>{feature.text}</FeatureText>
+        </FeatureItem>
+      ))}
+    </FeatureList>
+    <BuyButton>BUY NOW</BuyButton>
+  </PlanCardWrapper>
+  )
+  
+};
+
+const PlansContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f4f6;
 `;
 
-const PlanPrice = styled.p`
-  font-size: 24px;
-  font-weight: bold;
-  color: #4a90e2;
-  margin-bottom: 20px;
-`;
+const PlansGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 72rem;
+  width: 100%;
+  padding: 0 1rem;
 
-const PlanFeatures = styled.ul`
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
-`;
-
-const PlanFeature = styled.li`
-  padding: 10px 0;
-`;
-
-const Button = styled.button`
-  background: #4a90e2;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 30px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #357abd;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `;
 
 const PremiumPlans = () => {
-  const navigate = useNavigate();
-  const userType = localStorage.getItem('userType');
+  const [plans, setPlans] = useState([]);
 
-  const handleUpgrade = async (plan) => {
-    try {
-      await upgradeToPremium(plan);
-      navigate(userType === 'user' ? '/user-dashboard' : '/recruiter-dashboard');
-    } catch (err) {
-      console.error('Failed to upgrade to premium', err);
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    const data = await getPremiumPlans();
+    setPlans(data);
+  };
+
+  const getColorForPlan = (name) => {
+    switch (name.toUpperCase()) {
+      case 'BASIC': return '#10b981';
+      case 'STANDARD': return '#fbbf24';
+      case 'PREMIUM': return '#f43f5e';
+      default: return '#9ca3af';
     }
   };
 
   return (
-    <PlanContainer>
-      <PlanCard>
-        <PlanTitle>Monthly Plan</PlanTitle>
-        <PlanPrice>$9.99 per month</PlanPrice>
-        <PlanFeatures>
-          <PlanFeature>All premium features</PlanFeature>
-          <PlanFeature>Cancel anytime</PlanFeature>
-        </PlanFeatures>
-        <Button onClick={() => handleUpgrade('monthly')}>
-          Upgrade to Monthly Plan
-        </Button>
-      </PlanCard>
-      <PlanCard>
-        <PlanTitle>Annual Plan</PlanTitle>
-        <PlanPrice>$99.99 per year</PlanPrice>
-        <PlanFeatures>
-          <PlanFeature>All premium features</PlanFeature>
-          <PlanFeature>Save 17%</PlanFeature>
-          <PlanFeature>Best value</PlanFeature>
-        </PlanFeatures>
-        <Button onClick={() => handleUpgrade('annual')}>
-          Upgrade to Annual Plan
-        </Button>
-      </PlanCard>
-    </PlanContainer>
+    <PlansContainer>
+      <PlansGrid>
+        {plans.map((plan, index) => (
+          <PlanCard
+            key={index}
+            name={plan.name}
+            price={plan.price}
+            features={plan.features}
+            color={getColorForPlan(plan.name)}
+          />
+        ))}
+      </PlansGrid>
+    </PlansContainer>
   );
 };
 
