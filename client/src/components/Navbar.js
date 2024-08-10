@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
 
 const NavbarContainer = styled.nav`
   background: rgba(255, 255, 255, 0.1);
@@ -40,7 +40,8 @@ const NavLink = styled(Link)`
   padding: 8px 12px;
   border-radius: 15px;
 
-  &:hover, &.active {
+  &:hover,
+  &.active {
     color: #4a90e2;
     background-color: rgba(74, 144, 226, 0.1);
     transform: translateY(-2px);
@@ -68,23 +69,23 @@ const Button = styled.button`
 const Navbar = () => {
   const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
-  const userType = localStorage.getItem('userType');
-  const isAuthenticated = !!localStorage.getItem('token');
+  const userType = localStorage.getItem("userType");
+  const isAuthenticated = !!localStorage.getItem("token");
 
   useEffect(() => {
-    const userPlan = localStorage.getItem('plan');
+    const userPlan = localStorage.getItem("plan");
     setPlan(userPlan);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('plan');
-    navigate('/');
+    localStorage.removeItem("token");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("plan");
+    navigate("/");
   };
 
   const handleUpgradeToPremium = () => {
-    navigate('/premium-plans');
+    navigate("/premium-plans");
   };
 
   return (
@@ -93,16 +94,35 @@ const Navbar = () => {
       <NavLinks>
         {isAuthenticated ? (
           <>
-            <NavLink to="/dashboard" activeClassName="active">Dashboard</NavLink>
-            {plan === 'free' && (
-              <Button onClick={handleUpgradeToPremium}>Upgrade to Premium</Button>
+            {userType === "user" ? (
+              <>
+                <NavLink to="/user-dashboard" activeClassName="active">
+                  Dashboard
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/recruiter-dashboard" activeClassName="active">
+                  Dashboard
+                </NavLink>
+              </>
+            )}
+
+            {plan === "free" && (
+              <Button onClick={handleUpgradeToPremium}>
+                Upgrade to Premium
+              </Button>
             )}
             <Button onClick={handleLogout}>Logout</Button>
           </>
         ) : (
           <>
-            <NavLink to="/login" activeClassName="active">Login</NavLink>
-            <NavLink to="/register" activeClassName="active">Register</NavLink>
+            <NavLink to="/login" activeClassName="active">
+              Login
+            </NavLink>
+            <NavLink to="/register" activeClassName="active">
+              Register
+            </NavLink>
           </>
         )}
       </NavLinks>
