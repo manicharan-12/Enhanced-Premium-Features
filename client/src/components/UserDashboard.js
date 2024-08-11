@@ -1,9 +1,10 @@
-// UserDashboard.js
-import React, { useEffect, useState } from 'react';
+// components/UserDashboard.js
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { ThreeDots } from 'react-loader-spinner';
 import { getUserDashboard } from '../services/api';
+import { useGlobalState } from '../context/GlobalStateContext';
 import PremiumFeatures from './PremiumFeatures';
 
 const fadeIn = keyframes`
@@ -73,29 +74,26 @@ function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { userType,plan } = useGlobalState();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const data = await getUserDashboard();
       setDashboardData(data);
-      setLoading(false);
     } catch (err) {
       setError('Failed to fetch dashboard data');
+    } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleUpgrade = async () => {
-    try {
-      navigate('/premium-plans');
-    } catch (err) {
-      setError('Failed to upgrade to premium');
-    }
-  };
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const handleUpgrade = useCallback(() => {
+    navigate('/premium-plans');
+  }, [navigate]);
 
   if (loading) return <ThreeDots color="#4a90e2" height={80} width={80} />;
   if (error) return <div className="error">{error}</div>;
@@ -106,24 +104,24 @@ function UserDashboard() {
         <Title>User Dashboard</Title>
         {dashboardData && (
           <>
-            <p>Plan: {dashboardData.plan}</p>
+            <p>Plan: {plan}</p>
             <Title>Skills</Title>
             <List>
               {dashboardData.skills.map((skill, index) => (
-                <ListItem key={index}>{skill}</ListItem>
+                <ListItem key={skill + index}>{skill}</ListItem>
               ))}
             </List>
             <Title>Certifications</Title>
             <List>
               {dashboardData.certifications.map((cert, index) => (
-                <ListItem key={index}>{cert}</ListItem>
+                <ListItem key={cert + index}>{cert}</ListItem>
               ))}
             </List>
-            {dashboardData.plan === 'free' ? (
-              <Button onClick={handleUpgrade}>Upgrade to Premium</Button>
-            ) : (
-              <PremiumFeatures userType="user" />
-            )}
+            {plan === 'free' ? (
+  <Button onClick={handleUpgrade}>Upgrade to Premium</Button>
+) : (
+  <PremiumFeatures userType={userType} />
+)}
           </>
         )}
       </Card>
@@ -131,4 +129,4 @@ function UserDashboard() {
   );
 }
 
-export default UserDashboard;
+export default React.memo(UserDashboard);

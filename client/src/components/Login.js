@@ -1,10 +1,11 @@
-// Login.js
-import React, { useState } from 'react';
+// components/Login.js
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { ThreeDots } from 'react-loader-spinner';
 import { login } from '../services/api';
+import { useGlobalState } from '../context/GlobalStateContext';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-20px); }
@@ -86,35 +87,35 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { updateGlobalState } = useGlobalState();
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     setError('');
     setLoading(true);
     try {
       const response = await login(data.email, data.password);
       localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', response.userType);
-      localStorage.setItem('plan', response.plan);
+      updateGlobalState(response.userType, response.plan);
       navigate(response.userType === 'user' ? '/user-dashboard' : '/recruiter-dashboard');
     } catch (err) {
       setError('Invalid email or password');
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, updateGlobalState]);
 
   return (
     <LoginContainer>
       <Title>Login</Title>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Input
-          {...register('email', { required: 'Email is required' })}
+          {...register('email', { required: 'Email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } })}
           placeholder="Email"
           type="email"
         />
         {errors.email && <Error>{errors.email.message}</Error>}
         <Input
-          {...register('password', { required: 'Password is required' })}
+          {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } })}
           placeholder="Password"
           type="password"
         />

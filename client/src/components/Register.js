@@ -1,7 +1,7 @@
-// Register.js
-import React, { useState } from 'react';
+// /components/Register.js
+import React, { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled,{keyframes} from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { ThreeDots } from 'react-loader-spinner';
 import { register as registerUser } from '../services/api';
@@ -103,7 +103,7 @@ function Register() {
 
   const userType = watch('userType');
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     setError('');
     setLoading(true);
     try {
@@ -114,20 +114,32 @@ function Register() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   return (
     <RegisterContainer>
       <Title>Register</Title>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Input
-          {...register('email', { required: 'Email is required' })}
+          {...register('email', { 
+            required: 'Email is required',
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: "Invalid email address"
+            }
+          })}
           placeholder="Email"
           type="email"
         />
         {errors.email && <Error>{errors.email.message}</Error>}
         <Input
-          {...register('password', { required: 'Password is required' })}
+          {...register('password', { 
+            required: 'Password is required',
+            minLength: {
+              value: 8,
+              message: "Password must be at least 8 characters long"
+            }
+          })}
           placeholder="Password"
           type="password"
         />
@@ -155,4 +167,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default React.memo(Register);

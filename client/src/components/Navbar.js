@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useCallback } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { useGlobalState } from '../context/GlobalStateContext';
 
 const NavbarContainer = styled.nav`
   background: rgba(255, 255, 255, 0.1);
@@ -14,12 +15,13 @@ const NavbarContainer = styled.nav`
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
 `;
 
-const Logo = styled(Link)`
+const Logo = styled.a`
   font-size: 24px;
   font-weight: bold;
   color: #333;
   text-decoration: none;
   transition: color 0.3s ease;
+  cursor: pointer;
 
   &:hover {
     color: #4a90e2;
@@ -68,46 +70,42 @@ const Button = styled.button`
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [plan, setPlan] = useState(null);
-  const userType = localStorage.getItem("userType");
-  const isAuthenticated = !!localStorage.getItem("token");
+  const location = useLocation();
+  const { userType, plan } = useGlobalState();
+  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
-  useEffect(() => {
-    const userPlan = localStorage.getItem("plan");
-    setPlan(userPlan);
-  }, []);
-
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
     localStorage.removeItem("plan");
     navigate("/");
-  };
+  }, [navigate]);
 
-  const handleUpgradeToPremium = () => {
+  const handleUpgradeToPremium = useCallback(() => {
     navigate("/premium-plans");
-  };
+  }, [navigate]);
+
+  const handleLogoClick = useCallback(() => {
+    if (isAuthenticated) {
+      if (userType === "user") {
+        navigate("/user-dashboard");
+      } else if (userType === "recruiter") {
+        navigate("/recruiter-dashboard");
+      }
+    } else {
+      navigate("/");
+    }
+  }, [isAuthenticated, userType, navigate]);
 
   return (
     <NavbarContainer>
-      <Logo to="/">JobConnect</Logo>
+      <Logo onClick={handleLogoClick}>JobConnect</Logo>
       <NavLinks>
         {isAuthenticated ? (
           <>
-            {userType === "user" ? (
-              <>
-                <NavLink to="/user-dashboard" activeClassName="active">
-                  Dashboard
-                </NavLink>
-              </>
-            ) : (
-              <>
-                <NavLink to="/recruiter-dashboard" activeClassName="active">
-                  Dashboard
-                </NavLink>
-              </>
-            )}
-
+            <NavLink to={userType === "user" ? "/user-dashboard" : "/recruiter-dashboard"} className={location.pathname === (userType === "user" ? "/user-dashboard" : "/recruiter-dashboard") ? "active" : ""}>
+              Dashboard
+            </NavLink>
             {plan === "free" && (
               <Button onClick={handleUpgradeToPremium}>
                 Upgrade to Premium
@@ -117,10 +115,10 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <NavLink to="/login" activeClassName="active">
+            <NavLink to="/login" className={location.pathname === "/login" ? "active" : ""}>
               Login
             </NavLink>
-            <NavLink to="/register" activeClassName="active">
+            <NavLink to="/register" className={location.pathname === "/register" ? "active" : ""}>
               Register
             </NavLink>
           </>
@@ -130,4 +128,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default React.memo(Navbar);

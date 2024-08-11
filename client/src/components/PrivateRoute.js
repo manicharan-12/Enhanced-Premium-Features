@@ -1,10 +1,31 @@
+//components/PrivateRoute.js
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useGlobalState } from '../context/GlobalStateContext';
 
-const PrivateRoute = ({ element, ...rest }) => {
-  const isAuthenticated = !!localStorage.getItem('token');
+const PrivateRoute = ({ children }) => {
+  const { userType } = useGlobalState();
+  const isAuthenticated = Boolean(localStorage.getItem('token'));
+  const location = useLocation();
 
-  return isAuthenticated ? element : <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Allow access to /premium-plans for both user types
+  if (location.pathname === '/premium-plans') {
+    return children;
+  }
+
+  // Redirect to the appropriate dashboard based on userType
+  if (userType === 'user' && location.pathname !== '/user-dashboard') {
+    return <Navigate to="/user-dashboard" replace />;
+  }
+  if (userType === 'recruiter' && location.pathname !== '/recruiter-dashboard') {
+    return <Navigate to="/recruiter-dashboard" replace />;
+  }
+
+  return children;
 };
 
-export default PrivateRoute;
+export default PrivateRoute

@@ -1,9 +1,10 @@
-// RecruiterDashboard.js
-import React, { useEffect, useState } from 'react';
+// components/RecruiterDashboard.js
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { ThreeDots } from 'react-loader-spinner';
-import { getRecruiterDashboard, upgradeToPremium } from '../services/api';
+import { getRecruiterDashboard } from '../services/api';
+import { useGlobalState } from '../context/GlobalStateContext';
 import PremiumFeatures from './PremiumFeatures';
 
 const fadeIn = keyframes`
@@ -60,29 +61,26 @@ function RecruiterDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { plan } = useGlobalState();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const data = await getRecruiterDashboard();
       setDashboardData(data);
-      setLoading(false);
     } catch (err) {
       setError('Failed to fetch dashboard data');
+    } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleUpgrade = async () => {
-    try {
-      navigate('/premium-plans');
-    } catch (err) {
-      setError('Failed to upgrade to premium');
-    }
-  };
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const handleUpgrade = useCallback(() => {
+    navigate('/premium-plans');
+  }, [navigate]);
 
   if (loading) return <ThreeDots color="#4a90e2" height={80} width={80} />;
   if (error) return <div className="error">{error}</div>;
@@ -94,8 +92,8 @@ function RecruiterDashboard() {
         {dashboardData && (
           <>
             <p>Company: {dashboardData.company}</p>
-            <p>Plan: {dashboardData.plan}</p>
-            {dashboardData.plan === 'free' ? (
+            <p>Plan: {plan}</p>
+            {plan === 'free' ? (
               <Button onClick={handleUpgrade}>Upgrade to Premium</Button>
             ) : (
               <PremiumFeatures userType="recruiter" />
@@ -107,4 +105,4 @@ function RecruiterDashboard() {
   );
 }
 
-export default RecruiterDashboard;
+export default React.memo(RecruiterDashboard);

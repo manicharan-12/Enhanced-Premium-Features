@@ -1,6 +1,8 @@
+//App.js
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { GlobalStateProvider } from './context/GlobalStateContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import UserDashboard from './components/UserDashboard';
@@ -27,20 +29,22 @@ const AppWrapper = styled.div`
 
 function App() {
   return (
-    <Router>
-      <GlobalStyle />
-      <AppWrapper>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/user-dashboard" element={<PrivateRoute element={<UserDashboard />} />} />
-          <Route path="/recruiter-dashboard" element={<PrivateRoute element={<RecruiterDashboard />} />} />
-          <Route path="/premium-plans" element={<PrivateRoute element={<PremiumPlans />} />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </AppWrapper>
-    </Router>
+    <GlobalStateProvider>
+      <Router>
+        <GlobalStyle />
+        <AppWrapper>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/user-dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
+            <Route path="/recruiter-dashboard" element={<PrivateRoute><RecruiterDashboard /></PrivateRoute>} />
+            <Route path="/premium-plans" element={<PrivateRoute><PremiumPlans /></PrivateRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AppWrapper>
+      </Router>
+    </GlobalStateProvider>
   );
 }
 

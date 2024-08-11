@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+//components/PremiumPlans.js
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { getPremiumPlans } from '../services/api';
+import { useGlobalState } from '../context/GlobalStateContext';
 
 const PlanCardWrapper = styled.div`
   display: flex;
@@ -64,30 +66,6 @@ const BuyButton = styled.button`
   }
 `;
 
-const PlanCard = ({ name, price, features, color }) => {
-  console.log(features);
-  
-  return(
-    <PlanCardWrapper color={color}>
-    <PlanName>{name}</PlanName>
-    <PlanPeriod>PER MONTH</PlanPeriod>
-    <PlanPrice>${price}</PlanPrice>
-    <FeatureList>
-      {features.map((feature, index) => (
-        <FeatureItem key={index} included={feature.included}>
-          <FeatureIcon included={feature.included}>
-            {feature.included ? '✓' : '✕'}
-          </FeatureIcon>
-          <FeatureText included={feature.included}>{feature.text}</FeatureText>
-        </FeatureItem>
-      ))}
-    </FeatureList>
-    <BuyButton>BUY NOW</BuyButton>
-  </PlanCardWrapper>
-  )
-  
-};
-
 const PlansContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -109,33 +87,58 @@ const PlansGrid = styled.div`
   }
 `;
 
+const PlanCard = React.memo(({ name, price, features, color }) => {
+  return (
+    <PlanCardWrapper color={color}>
+      <PlanName>{name}</PlanName>
+      <PlanPeriod>PER MONTH</PlanPeriod>
+      <PlanPrice>${price}</PlanPrice>
+      <FeatureList>
+        {features.map((feature, index) => (
+          <FeatureItem key={feature.text + index} included={feature.included}>
+            <FeatureIcon included={feature.included}>
+              {feature.included ? '✓' : '✕'}
+            </FeatureIcon>
+            <FeatureText included={feature.included}>{feature.text}</FeatureText>
+          </FeatureItem>
+        ))}
+      </FeatureList>
+      <BuyButton>BUY NOW</BuyButton>
+    </PlanCardWrapper>
+  );
+});
+
 const PremiumPlans = () => {
   const [plans, setPlans] = useState([]);
 
-  useEffect(() => {
-    fetchPlans();
+  const fetchPlans = useCallback(async () => {
+    try {
+      const data = await getPremiumPlans();
+      setPlans(data);
+    } catch (error) {
+      console.error('Failed to fetch premium plans:', error);
+    }
   }, []);
 
-  const fetchPlans = async () => {
-    const data = await getPremiumPlans();
-    setPlans(data);
-  };
+  useEffect(() => {
+    fetchPlans();
+  }, [fetchPlans]);
 
-  const getColorForPlan = (name) => {
+  const getColorForPlan = useCallback((name) => {
     switch (name.toUpperCase()) {
       case 'BASIC': return '#10b981';
       case 'STANDARD': return '#fbbf24';
       case 'PREMIUM': return '#f43f5e';
       default: return '#9ca3af';
     }
-  };
-
+  }, []);
+  
   return (
     <PlansContainer>
       <PlansGrid>
-        {plans.map((plan, index) => (
+        {plans.map((plan) => (
           <PlanCard
-            key={index}
+            key={plan.name}
             name={plan.name}
             price={plan.price}
             features={plan.features}
@@ -145,6 +148,6 @@ const PremiumPlans = () => {
       </PlansGrid>
     </PlansContainer>
   );
-};
-
-export default PremiumPlans;
+  };
+  
+  export default React.memo(PremiumPlans);
