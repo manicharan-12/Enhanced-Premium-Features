@@ -4,7 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
-
+const planRoutes=require('./routes/plans')
 // Create Express app
 const app = express();
 
@@ -12,6 +12,8 @@ const app = express();
 connectDB();
 
 // Middleware
+//https://enhanced-premium-features.vercel.app
+//http://localhost:3000
 app.use(cors({
   origin: 'https://enhanced-premium-features.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -22,6 +24,7 @@ app.use(express.json());
 // Routes
 app.use('/', authRoutes);
 app.use('/', dashboardRoutes);
+app.use("/", planRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

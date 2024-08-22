@@ -37,26 +37,12 @@ router.get('/recruiter-dashboard', auth, async (req, res) => {
 router.get('/premium-plans',auth,async(req,res)=>{
   try {
     const user = await User.findById(req.user.id);
-    const plans= await PremiumPlan.find({userType:`${user.userType}`})
-    
+    const plans= await PremiumPlan.find({userType:`${user.userType}`, name:{$ne:`${user.plan}`}})
     res.json(plans)
   } catch (error) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 })
-
-// Upgrade to premium plan
-router.post('/upgrade-plan', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.plan = 'premium';
-    await user.save();
-    res.json({ msg: 'Upgraded to premium plan successfully' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
 
 module.exports = router;

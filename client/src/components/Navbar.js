@@ -106,11 +106,9 @@ const Navbar = () => {
             <NavLink to={userType === "user" ? "/user-dashboard" : "/recruiter-dashboard"} className={location.pathname === (userType === "user" ? "/user-dashboard" : "/recruiter-dashboard") ? "active" : ""}>
               Dashboard
             </NavLink>
-            {plan === "free" && (
               <Button onClick={handleUpgradeToPremium}>
                 Upgrade to Premium
               </Button>
-            )}
             <Button onClick={handleLogout}>Logout</Button>
           </>
         ) : (
